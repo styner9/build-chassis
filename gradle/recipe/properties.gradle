@@ -1,0 +1,76 @@
+ext {
+    versions = [
+            "lang"  : [
+                    "java"  : "11",
+                    "kotlin": "1.5.32"
+            ],
+
+            "lib"   : [
+                    "springBoot"         : "2.6.9",
+                    "springCloud"        : "2021.0.3",
+                    "guava"              : "31.1-jre",
+                    "commonsIo"          : "2.11.0",
+                    "commonsText"        : "1.9",
+                    "commonsCollections4": "4.4",
+                    "commonsNet"         : "3.8.0",
+                    "commonsValidator"   : "1.7",
+                    "vavr"               : "0.10.3",
+                    "junit4"             : "4.13.2",
+                    "junit5"             : "5.8.2",
+                    "spock"              : "2.1-groovy-3.0",
+                    "jsonUnitAssertj"    : "2.35.0",
+                    "mapstruct"          : "1.4.2.Final",
+                    "swagger"            : "1.6.6",
+                    "springfox"          : "2.10.5",
+                    "redisson"           : "3.17.4",
+                    "resilience4j"       : "1.7.0",
+            ],
+
+            "plugin": [
+                    "dependencyManagement"   : "1.0.12.RELEASE",
+                    "gradleVersions"         : "0.42.0",
+                    "gradleUseLatestVersions": "0.2.18",
+                    "sonarqubeGradle"        : "3.4.0.2513",
+                    "semverGit"              : "3.0.0",
+                    "gradleGitProperties"    : "2.4.1",
+                    "gradleTestLogger"       : "3.2.0"
+            ]
+    ]
+
+    nexus = [
+            "enabled"          : false,
+            "supportGradleDist": false,
+            "url"              : "http://my.nexus",
+            // "username"         : "username",
+            // "password"         : "password"
+    ]
+
+    sonarqube = [
+            "enabled": false,
+            "url"    : "http://my.sonarqube"
+    ]
+
+    dependencyControl = [
+            "lombok"   : true,
+            "mapstruct": true,
+            "log4j"    : false
+    ]
+
+    testControl = [
+            "junit4"  : false,
+            "junit5"  : true,
+            "spock"   : false,
+            "assertj" : true,
+            "jsonpath": true,
+            "category": [
+                    "enabled"                  : true,
+                    "unitTestExclusions"       : [
+                            "dev.chassis.test.IntegrationTest",
+                            "dev.chassis.test.NoTest"
+                    ],
+                    "integrationTestInclusions": [
+                            "dev.chassis.test.IntegrationTest"
+                    ],
+            ]
+    ]
+}

@@ -1,0 +1,89 @@
+apply plugin: "java"
+
+compileJava.options.encoding = "UTF-8"
+compileTestJava.options.encoding = "UTF-8"
+javadoc.options.encoding = "UTF-8"
+
+sourceCompatibility = "${versions.lang.java}"
+targetCompatibility = "${versions.lang.java}"
+
+dependencies {
+    if (dependencyControl.lombok) {
+        compileOnly "org.projectlombok:lombok"
+        annotationProcessor "org.projectlombok:lombok"
+
+        testCompileOnly "org.projectlombok:lombok"
+        testAnnotationProcessor "org.projectlombok:lombok"
+    }
+    if (dependencyControl.mapstruct) {
+        implementation "org.mapstruct:mapstruct"
+        annotationProcessor "org.mapstruct:mapstruct-processor"
+    }
+    if (testControl.assertj) {
+        testImplementation "org.assertj:assertj-core"
+        testImplementation "net.javacrumbs.json-unit:json-unit-assertj"
+    }
+    if (testControl.jsonpath) {
+        testImplementation "com.jayway.jsonpath:json-path"
+        testImplementation "com.jayway.jsonpath:json-path-assert"
+    }
+}
+
+/*
+ * https://github.com/tbroyer/gradle-apt-plugin#do-without-netltgtapt-idea
+ */
+import org.gradle.util.GradleVersion;
+
+// If running from IntelliJ IDEA (such as when importing the project)
+if (Boolean.getBoolean("idea.active")) {
+    def HAS_PROCESSOR_GENERATED_SOURCES_DIR = GradleVersion.current() >= GradleVersion.version("4.3")
+
+    allprojects { project ->
+        project.apply plugin: "idea"
+
+        if (HAS_PROCESSOR_GENERATED_SOURCES_DIR) {
+            project.plugins.withType(JavaPlugin) {
+                project.afterEvaluate {
+                    project.idea.module {
+                        def mainGeneratedSources = project.tasks["compileJava"].options.annotationProcessorGeneratedSourcesDirectory
+                        if (mainGeneratedSources) {
+                            sourceDirs += mainGeneratedSources
+                            generatedSourceDirs += mainGeneratedSources
+                        }
+                        def testGeneratedSources = project.tasks["compileTestJava"].options.annotationProcessorGeneratedSourcesDirectory
+                        if (testGeneratedSources) {
+                            testSourceDirs += testGeneratedSources
+                            generatedSourceDirs += testGeneratedSources
+                        }
+
+                        // Uncomment if you want to do annotation processing in IntelliJ IDEA:
+                        // def annotationProcessorConfiguration = configurations.findByName("annotationProcessor")
+                        // if (annotationProcessorConfiguration) {
+                        //   scopes.PROVIDED.plus += annotationProcessorConfiguration
+                        // }
+                        // def testAnnotationProcessorConfiguration = configurations.findByName("testAnnotationProcessor")
+                        // if (testAnnotationProcessorConfiguration) {
+                        //   scopes.TEST.plus += testAnnotationProcessorConfiguration
+                        // }
+                    }
+                }
+            }
+        } else {
+            // fallback to automatically applying net.ltgt.apt-idea whenever net.ltgt.apt is used
+            project.plugins.withId("net.ltgt.apt") {
+                try {
+                    project.apply plugin: "net.ltgt.apt-idea"
+                    // Comment if you want to do annotation processing in IntelliJ IDEA:
+                    project.plugins.withType(JavaPlugin) {
+                        project.afterEvaluate {
+                            project.idea.module.apt.addAptDependencies = false
+                        }
+                    }
+                } catch (UnknownPluginException) {
+                    // ignore, in case an older version of net.ltgt.apt is being used
+                    // that doesn"t come with net.ltgt.apt-idea.
+                }
+            }
+        }
+    }
+}

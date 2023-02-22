@@ -1,0 +1,29 @@
+{% if not docker_base_image is defined -%}
+    {% set docker_base_image = 'amazoncorretto:19-alpine' -%}
+{% endif -%}
+{% if fixed_docker_base_image|default(false) -%}
+FROM {{ docker_base_image }}
+{% else -%}
+ARG BASE_IMAGE={{ docker_base_image }}
+FROM ${BASE_IMAGE:-{{ docker_base_image }}}
+{% endif %}
+
+ENV APP_NAME={{ app }}
+
+ARG APP_VERSION=0.0.1-SNAPSHOT
+ENV APP_VERSION=${APP_VERSION}
+
+{% if not jar is defined -%}
+    {% set jar = app + '-${APP_VERSION}.jar' -%}
+{% endif -%}
+ENV APP_JAR_FILE={{ jar }}
+
+WORKDIR /app/{{ app }}
+COPY build/libs/{{ jar }} .
+COPY src/main/resources/bootstrap.yml ./env_file.yml
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+
+{{ docker_instructions|default('') }}
+
+CMD ["./entrypoint.sh"]

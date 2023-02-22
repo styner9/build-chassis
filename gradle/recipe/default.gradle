@@ -1,0 +1,53 @@
+group "dev.chassis"
+
+if (project.hasProperty("useGitVersion")) {
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine "git", "describe", "--tags", "--dirty"
+            standardOutput = stdout
+        }
+        version stdout.toString().trim()
+    } catch (Exception e) {
+        version "0.0.0-${new Date().format("yyyyMMddHHmmss")}"
+    }
+} else if (System.getenv("VERSION")) {
+    version System.getenv("VERSION")
+} else {
+    if (project.hasProperty("uniqueSnapshot")) {
+        ext.snapshotSuffix = "<count>.g<sha><dirty>-SNAPSHOT"
+    }
+    apply plugin: "com.cinnober.gradle.semver-git"
+}
+
+subprojects {
+    group rootProject.group
+    version rootProject.version
+}
+
+apply plugin: "idea"
+idea {
+    module {
+        downloadSources = true
+    }
+}
+
+if (sonarqube.enabled) {
+    apply plugin: "org.sonarqube"
+
+    sonarqube {
+        properties {
+            property "sonar.host.url", sonarqube.url
+            property "sonar.sourceEncoding", "UTF-8"
+        }
+    }
+}
+
+if (nexus.enabled && nexus.supportGradleDist) {
+    task configureWrapper {
+        doLast {
+            wrapper.distributionUrl = "${nexus.url}/repository/gradle-distribution/gradle-${wrapper.gradleVersion}-bin.zip"
+        }
+    }
+    wrapper.dependsOn configureWrapper
+}

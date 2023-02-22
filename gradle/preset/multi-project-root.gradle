@@ -1,0 +1,6 @@
+apply from: "${rootDir}/build-chassis/gradle/recipe/default.gradle", to: project
+
+subprojects {
+    apply from: "${rootDir}/build-chassis/gradle/recipe/dependencies.gradle", to: subprojects
+    apply from: "${rootDir}/build-chassis/gradle/recipe/java.gradle", to: subprojects
+}

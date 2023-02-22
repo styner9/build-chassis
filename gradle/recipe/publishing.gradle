@@ -1,0 +1,20 @@
+apply plugin: "maven-publish"
+
+publishing {
+    repositories {
+        if (nexus.enabled && nexus.username && nexus.password) {
+            maven {
+                credentials {
+                    username "${nexus.username}"
+                    password "${nexus.password}"
+                }
+
+                url = version.endsWith("SNAPSHOT")
+                        ? "${nexus.url}/repository/maven-snapshots/"
+                        : "${nexus.url}/repository/maven-releases/"
+
+                allowInsecureProtocol = true
+            }
+        }
+    }
+}

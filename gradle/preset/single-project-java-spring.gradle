@@ -1,0 +1,4 @@
+apply from: "${rootDir}/build-chassis/gradle/recipe/default.gradle", to: project
+apply from: "${rootDir}/build-chassis/gradle/recipe/dependencies.gradle", to: project
+apply from: "${rootDir}/build-chassis/gradle/recipe/java.gradle", to: project
+apply from: "${rootDir}/build-chassis/gradle/recipe/spring.gradle", to: project

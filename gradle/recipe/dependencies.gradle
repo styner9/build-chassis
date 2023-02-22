@@ -1,0 +1,110 @@
+def companyGroup = rootProject.group
+repositories {
+    if (nexus.enabled) {
+        mavenLocal() {
+            content {
+                includeGroup companyGroup
+            }
+            mavenContent {
+                snapshotsOnly()
+            }
+        }
+
+        maven {
+            url = "${nexus.url}/repository/maven-releases/"
+            allowInsecureProtocol = true
+            content {
+                includeGroup companyGroup
+            }
+            mavenContent {
+                releasesOnly()
+            }
+        }
+
+        maven {
+            url = "${nexus.url}/repository/maven-snapshots/"
+            allowInsecureProtocol = true
+            content {
+                includeGroup companyGroup
+            }
+            mavenContent {
+                snapshotsOnly()
+            }
+        }
+
+        maven {
+            url = "${nexus.url}/repository/maven-public/"
+            allowInsecureProtocol = true
+            mavenContent {
+                releasesOnly()
+            }
+        }
+    } else {
+        mavenCentral()
+        jcenter()
+    }
+}
+
+// https://docs.spring.io/spring-boot/docs/2.5.14/reference/html/dependency-versions.html#dependency-versions
+apply plugin: "io.spring.dependency-management"
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:${versions.lib.springBoot}"
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${versions.lib.springCloud}"
+        mavenBom "org.junit:junit-bom:${versions.lib.junit5}"
+        mavenBom "io.github.resilience4j:resilience4j-bom:${versions.lib.resilience4j}"
+    }
+
+    dependencies {
+        dependency "com.google.guava:guava:${versions.lib.guava}"
+        dependency "org.apache.commons:commons-text:${versions.lib.commonsText}"
+        dependency "org.apache.commons:commons-collections4:${versions.lib.commonsCollections4}"
+        dependency "commons-io:commons-io:${versions.lib.commonsIo}"
+        dependency "commons-net:commons-net:${versions.lib.commonsNet}"
+        dependency "commons-validator:commons-validator:${versions.lib.commonsValidator}"
+        dependency "io.vavr:vavr:${versions.lib.vavr}"
+        dependency "io.vavr:vavr-jackson:${versions.lib.vavr}"
+        dependency "junit:junit:${versions.lib.junit4}"
+        dependency "org.spockframework:spock-spring:${versions.lib.spock}"
+        dependency "net.javacrumbs.json-unit:json-unit-assertj:${versions.lib.jsonUnitAssertj}"
+        dependency "org.mapstruct:mapstruct:${versions.lib.mapstruct}"
+        dependency "org.mapstruct:mapstruct-processor:${versions.lib.mapstruct}"
+        dependency "io.swagger:swagger-annotations:${versions.lib.swagger}"
+        dependency "io.swagger:swagger-models:${versions.lib.swagger}"
+        dependency "io.springfox:springfox-swagger2:${versions.lib.springfox}"
+        dependency "io.springfox:springfox-swagger-ui:${versions.lib.springfox}"
+        dependency "io.springfox:springfox-spring-webmvc:${versions.lib.springfox}"
+        dependency "io.springfox:springfox-spring-webflux:${versions.lib.springfox}"
+        dependency "io.springfox:springfox-bean-validators:${versions.lib.springfox}"
+        dependency "org.redisson:redisson:${versions.lib.redisson}"
+    }
+}
+
+if (!dependencyControl.log4j) {
+    configurations.all {
+        exclude group: "log4j", module: "log4j"
+        exclude group: "org.slf4j", module: "slf4j-log4j12"
+        exclude group: "org.slf4j", module: "log4j-over-slf4j"
+        exclude group: "org.apache.logging.log4j", module: "log4j-to-slf4j"
+        exclude group: "org.apache.logging.log4j", module: "log4j-api"
+    }
+}
+
+task allDependencies(type: DependencyReportTask) {
+    dependsOn allprojects.collect { "$it.path:dependencies" }
+}
+
+apply plugin: "com.github.ben-manes.versions"
+apply plugin: "se.patrikerdes.use-latest-versions"
+dependencyUpdates.resolutionStrategy {
+    componentSelection { rules ->
+        rules.all { ComponentSelection selection ->
+            boolean rejected = ["alpha", "beta", "rc", "cr", "m", "preview", "b", "ea"].any { qualifier ->
+                selection.candidate.version ==~ /(?i).*[.-]$qualifier[.\d-+]*/
+            }
+            if (rejected) {
+                selection.reject("Release candidate")
+            }
+        }
+    }
+}
