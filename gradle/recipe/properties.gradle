@@ -65,11 +65,12 @@ ext {
             "category": [
                     "enabled"                  : true,
                     "unitTestExclusions"       : [
-                            "dev.chassis.test.IntegrationTest",
-                            "dev.chassis.test.NoTest"
+                            "dev.springchassis.test.BenchmarkTest",
+                            "dev.springchassis.test.IntegrationTest",
+                            "dev.springchassis.test.NoTest"
                     ],
                     "integrationTestInclusions": [
-                            "dev.chassis.test.IntegrationTest"
+                            "dev.springchassis.test.IntegrationTest"
                     ],
             ]
     ]
